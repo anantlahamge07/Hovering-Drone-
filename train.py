@@ -1,6 +1,6 @@
 from stable_baselines3 import PPO
 from envs.drone_hover_env import DroneHoverEnv
-
+import numpy as np
 
 env = DroneHoverEnv()
 
@@ -10,22 +10,10 @@ model = PPO(
     verbose = 1
 )
 
-model.learn(total_timesteps=10000)
 
 
+model.learn(total_timesteps = 300_000)
 
-obs, _ = env.reset()
+model.save("models/trained_hovering_agent")
 
-for i in range(200):
-    action, _ = model.predict(obs, deterministic=True)
-
-    obs, reward, terminated, truncated, _ = env.step(action)
-
-    print(
-        f"z={obs[2]:.3f}",
-        f"reward={reward:.3f}",
-        f"action={action}"
-    )
-
-    if terminated or truncated:
-        break
+print("Model saved :)")

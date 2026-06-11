@@ -1,19 +1,26 @@
 from envs.drone_hover_env import DroneHoverEnv
 import time
 import pybullet as p
-
+import numpy as np
+from stable_baselines3 import PPO
 env = DroneHoverEnv()
 
+model = PPO.load("models/trained_hovering_agent")
+
 obs, info = env.reset()
-print(p.getDynamicsInfo(env.drone, -1)[0])
 
-for i in range(500):
-    action = env.action_space.sample()
 
-    obs, reward, terminated, truncated, info = env.step(action)
 
-    time.sleep(1/60)
+while True:
+    action, _ = model.predict(
+        obs, 
+        deterministic = True
+    )
 
-    if terminated or truncated:
-        print("Episode ended at step", i)
-        obs, info = env.reset()
+    obs, reward, terminated, truncated, _ = env.step(action)
+
+
+    time.sleep(1/30)
+    if(terminated or truncated):
+        print("Resetting!")
+        obs, _  = env.reset()

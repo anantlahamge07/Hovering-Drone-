@@ -53,7 +53,7 @@ class DroneHoverEnv(gym.Env):
         self.target_pos = np.array([0.0, 0.0, 1])
         self.current_step = 0
         self.max_steps = 100
-        self.max_thrust = 0.2
+        self.max_thrust = 0.4
         self.drone_path = "/home/anant-anil-lahamge/gym-pybullet-drones/gym_pybullet_drones/assets/cf2x.urdf"
 
 
@@ -70,7 +70,8 @@ class DroneHoverEnv(gym.Env):
         self.plane = p.loadURDF("plane.urdf")
         self.drone = p.loadURDF(
             self.drone_path,
-            [0, 0, 1]
+            [0, 0, 1],
+            globalScaling = 8.0
         )
         obs = self.get_observation()
         return obs, {}
@@ -111,15 +112,16 @@ class DroneHoverEnv(gym.Env):
             p.stepSimulation()
         obs = self.get_observation()
         truncated = bool(self.current_step >= self.max_steps)
-        terminated = bool(obs[2] <= 0.1)
+        terminated = bool(obs[2] <= 0.5)
+
         if(terminated): reward = -100.0
         else:
-            distance =  np.sqrt(obs[0]*obs[0] + obs[1]*obs[1] + (obs[2] - 1.0)*(obs[2] - 1.0))
+            distance =  np.sqrt(obs[0]*obs[0] + obs[1]*obs[1] + (obs[2] - 1.0)**2)
             vertical_speed = obs[5]
-            reward = (
+            reward = float(
                 2.0
                 - 3.0 * distance
-                - 0.2 * vertical_speed
+                - 0.2 * abs(vertical_speed)
             )
 
         return obs, reward, terminated, truncated, {}
